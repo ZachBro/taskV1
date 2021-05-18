@@ -38,38 +38,55 @@ int main()
         std::string answer;
         std::cout << "Would you like to add, view or edit a task? (add/edit/view/exit): ";
         getInputFromUser(answer);
+        stringToUpper(answer);
 
         if (answer == "ADD")
         {
-            std::cout << "Please enter the task name: ";
-            //getline()
+            std::string tempTaskName;
+            time_t tempTime = -1;
 
+            std::cout << "Enter the task name: ";
+            getInputFromUser(tempTaskName);
+
+            while (tempTime == -1)
+            {
+                std::string tempDateString;
+
+                std::cout << "Enter the time and date due (hh:mm dd/mm/yyyy in 24 hour time): ";
+                getInputFromUser(tempDateString);
+
+                const char* cTime = tempDateString.c_str();
+                tempTime = parseStringToTime(cTime);
+            }
+            Task temp(tempTaskName, tempTime);
+            tasks.push_back(temp);
         }
         else if (answer == "VIEW")
         {
-            bool viewExit = false;
-            while (!viewExit)
+            bool exitView = false;
+            while (!exitView)
             {
                 std::cout << "Would you like to view current, completed, all tasks or exit? ";
                 getInputFromUser(answer);
+                stringToUpper(answer);
                 if (answer == "CURRENT")
                 {
                     printTasks(tasks, todo);
-                    viewExit = true;
+                    exitView = true;
                 }
                 else if (answer == "COMPLETED")
                 {
                     printTasks(tasks, completed);
-                    viewExit = true;
+                    exitView = true;
                 }
                 else if (answer == "ALL")
                 {
                     printTasks(tasks, all);
-                    viewExit = true;
+                    exitView = true;
                 }
                 else if (answer == "EXIT")
                 {
-                    viewExit = true;
+                    exitView = true;
                 }
             }
         }
@@ -161,7 +178,7 @@ void printTasks(const std::vector<Task>& tasks, int modifier)
         {
             if (task.isCompleted())
             {
-                printSingleTask(task, modifier);  //this can be changed to a binary && || expression I think
+                printSingleTask(task, modifier);
             }
         }
     }
@@ -179,8 +196,9 @@ void printTasks(const std::vector<Task>& tasks, int modifier)
 
 void printSingleTask(const Task& task, int modifier)
 {
-    std::cout << "\e[1mTask:\e[0m " << task.getName();
-    int i = 20 - task.getName().length();
+    std::cout << "ID: " << task.getId();
+
+    int i = 4 - (std::to_string(task.getId()).length());
     if (i < 0)
     {
         i = 0;
@@ -189,11 +207,23 @@ void printSingleTask(const Task& task, int modifier)
     {
         std::cout << " ";
     }
-    std::cout << " \e[1mDue:\e[0m " << parseTimeToString(task.getDate());
+
+    std::cout << "Task: " << task.getName();
+
+    i = 20 - task.getName().length();
+    if (i < 0)
+    {
+        i = 0;
+    }
+    for (; i > 0; i--)
+    {
+        std::cout << " ";
+    }
+    std::cout << " Due: " << parseTimeToString(task.getDate());
     if (modifier == 0)
     {
         std::cout << "   ";
-        std::cout << " \e[1mStatus:\e[0m " << (task.isCompleted() ? "Complete" : "Not Complete");
+        std::cout << " Status: " << (task.isCompleted() ? "Complete" : "Not Complete");
     }
     std::cout << std::endl;
 }
@@ -202,7 +232,6 @@ void getInputFromUser(std::string& str)
 {
     getline(std::cin, str);
     trimString(str);
-    stringToUpper(str);
 }
 
 void trimString(std::string& str)
